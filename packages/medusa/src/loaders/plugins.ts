@@ -33,6 +33,7 @@ import { MiddlewareService } from "../services"
 import { isBatchJobStrategy } from "../interfaces/batch-job-strategy"
 import { isPriceSelectionStrategy } from "../interfaces/price-selection-strategy"
 import logger from "./logger"
+import AbstractAuthStrategy, { isAuthStrategy } from "../interfaces/authentication-strategy"
 
 type Options = {
   rootDirectory: string
@@ -65,7 +66,7 @@ export default async ({
   await Promise.all(
     resolved.map(async (pluginDetails) => {
       registerRepositories(pluginDetails, container)
-      await registerServices(pluginDetails, container)
+      await registerServices(pluginDetails, container, app)
       await registerMedusaApi(pluginDetails, container)
       registerApi(pluginDetails, app, rootDirectory, container, activityId)
       registerCoreRouters(pluginDetails, container)
@@ -331,7 +332,8 @@ function registerApi(
  */
 export async function registerServices(
   pluginDetails: PluginDetails,
-  container: MedusaContainer
+  container: MedusaContainer,
+  app: Express
 ): Promise<void> {
   const files = glob.sync(`${pluginDetails.resolve}/services/[!__]*.js`, {})
   await Promise.all(
@@ -439,6 +441,26 @@ export async function registerServices(
           ).singleton(),
           [`tp_${loaded.identifier}`]: aliasTo(name),
         })
+      } else if (isAuthStrategy(loaded.prototype)) {
+        container.registerAdd(
+          "authenticationStrategies",
+          asFunction((cradle) => new loaded(cradle, pluginDetails.options))
+        )
+
+        container.register({
+          [name]: asFunction(
+            (cradle) => new loaded(cradle, pluginDetails.options)
+          ).singleton(),
+          [`auth_${loaded.identifier}`]: aliasTo(name),
+        })
+
+        const strategy: AbstractAuthStrategy<never> = container.resolve(
+          `auth_${loaded.identifier}`
+        )
+
+        if (strategy.afterInit) {
+          await strategy.afterInit(app)
+        }
       } else {
         container.register({
           [name]: asFunction(
