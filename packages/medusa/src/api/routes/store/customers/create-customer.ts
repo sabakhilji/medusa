@@ -1,9 +1,7 @@
 import { IsEmail, IsOptional, IsString } from "class-validator"
-import jwt from "jsonwebtoken"
-import { defaultStoreCustomersFields, defaultStoreCustomersRelations } from "."
-import { Customer } from "../../../.."
 import CustomerService from "../../../../services/customer"
 import { validator } from "../../../../utils/validator"
+import { AuthService } from "../../../../services"
 
 /**
  * @oas [post] /customers
@@ -32,22 +30,14 @@ export default async (req, res) => {
   const validated = await validator(StorePostCustomersReq, req.body)
 
   const customerService: CustomerService = req.scope.resolve("customerService")
-  let customer: Customer = await customerService.create(validated)
+  await customerService.create(validated)
 
-  // Add JWT to cookie
-  const {
-    projectConfig: { jwt_secret },
-  } = req.scope.resolve("configModule")
-  req.session.jwt = jwt.sign({ customer_id: customer.id }, jwt_secret!, {
-    expiresIn: "30d",
-  })
-
-  customer = await customerService.retrieve(customer.id, {
-    relations: defaultStoreCustomersRelations,
-    select: defaultStoreCustomersFields,
-  })
-
-  res.status(200).json({ customer })
+  const authService: AuthService = req.scope.resolve("authService")
+  const authStrategy = await authService.retrieveAuthenticationStrategy(
+    req,
+    "store"
+  )
+  await authStrategy.authenticate(req, res)
 }
 
 export class StorePostCustomersReq {
