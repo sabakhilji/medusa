@@ -2,6 +2,7 @@ import { IsEmail, IsOptional, IsString } from "class-validator"
 import CustomerService from "../../../../services/customer"
 import { validator } from "../../../../utils/validator"
 import { AuthService } from "../../../../services"
+import { defaultStoreCustomersFields, defaultStoreCustomersRelations } from "./index"
 
 /**
  * @oas [post] /customers
@@ -37,6 +38,11 @@ export default async (req, res) => {
     req,
     "store"
   )
+
+  req.retrieveConfig = {
+    relations: defaultStoreCustomersRelations,
+    select: defaultStoreCustomersFields,
+  }
   await authStrategy.authenticate(req, res)
 }
 
