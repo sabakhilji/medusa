@@ -273,7 +273,7 @@ class KlarnaProviderService extends AbstractPaymentService {
   /**
    * Creates Stripe PaymentIntent.
    * @param {Cart} cart - the cart to create a payment for
-   * @return {Record<string, unknown>} payment intent
+   * @return {Promise<PaymentSessionData>} payment intent
    */
   async createPayment(cart) {
     try {
@@ -292,7 +292,7 @@ class KlarnaProviderService extends AbstractPaymentService {
   /**
    * Retrieves Klarna Order.
    * @param {PaymentData} paymentData - the cart to retrieve order for
-   * @return {Object} Klarna order
+   * @return {Promise<Data>} Klarna order
    */
   async retrievePayment(paymentData) {
     try {
@@ -339,7 +339,7 @@ class KlarnaProviderService extends AbstractPaymentService {
    * in use.
    * @param {PaymentSession} paymentSession - payment session data
    * @param {Data} context - properties relevant to current context
-   * @return {Promise<{ status: PaymentSessionStatus, data: PaymentSessionData }>} result with data and status
+   * @return {Promise<{data: PaymentSessionData; status: PaymentSessionStatus}>} result with data and status
    */
   async authorizePayment(paymentSession, context = {}) {
     try {
@@ -429,7 +429,7 @@ class KlarnaProviderService extends AbstractPaymentService {
   /**
    * Captures Klarna order.
    * @param {Payment} payment - payment method data from cart
-   * @return {PaymentData} captured order
+   * @return {Promise<PaymentData>} captured order
    */
   async capturePayment(payment) {
     const { order_id } = payment.data
@@ -456,7 +456,7 @@ class KlarnaProviderService extends AbstractPaymentService {
    * Refunds payment for Klarna Order.
    * @param {Payment} payment - payment method data from cart
    * @param {number} refundAmount - the amount to refund
-   * @return {string} id of refunded order
+   * @return {Promise<PaymentData>} id of refunded order
    */
   async refundPayment(payment, refundAmount) {
     const { order_id } = payment.data
