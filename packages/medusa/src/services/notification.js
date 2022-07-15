@@ -235,26 +235,26 @@ class NotificationService extends BaseService {
    * @return {Notification} the newly created notification
    */
   async resend(id, config = {}) {
-    return await this.atomicPhase_(async (manager) => {
-      const notification = await this.retrieve(id)
+    const notification = await this.retrieve(id)
 
-      const provider = this.retrieveProvider_(notification.provider_id)
-      const { to, data } = await provider.resendNotification(
-        notification,
-        config,
-        this.attachmentGenerator_
-      )
+    const provider = this.retrieveProvider_(notification.provider_id)
+    const { to, data } = await provider.resendNotification(
+      notification,
+      config,
+      this.attachmentGenerator_
+    )
 
-      const notiRepo = manager.getCustomRepository(this.notificationRepository_)
-      const created = notiRepo.create({
-        ...notification,
-        to,
-        data,
-        parent_id: id,
-      })
-
-      return notiRepo.save(created)
+    const notiRepo = this.manager_.getCustomRepository(
+      this.notificationRepository_
+    )
+    const created = notiRepo.create({
+      ...notification,
+      to,
+      data,
+      parent_id: id,
     })
+
+    return notiRepo.save(created)
   }
 }
 

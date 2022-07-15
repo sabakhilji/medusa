@@ -13,6 +13,7 @@ import {
 import { OrderService } from "../../../../services"
 import { AddressPayload } from "../../../../types/common"
 import { validator } from "../../../../utils/validator"
+import { EntityManager } from "typeorm"
 /**
  * @oas [post] /orders
  * operationId: "PostOrders"
@@ -114,7 +115,13 @@ export default async (req, res) => {
   const validated = await validator(AdminPostOrdersReq, req.body)
 
   const orderService: OrderService = req.scope.resolve("orderService")
-  let order = await orderService.create(validated)
+  const manager: EntityManager = req.scope.resolve("manager")
+  let order = await manager.transaction(async (transactionManager) => {
+    return await orderService
+      .withTransaction(transactionManager)
+      .create(validated)
+  })
+
   order = await orderService.decorate(order, [], ["region"])
 
   res.status(200).json({ order })
