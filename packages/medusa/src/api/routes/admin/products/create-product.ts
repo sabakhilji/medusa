@@ -18,7 +18,10 @@ import {
   ShippingProfileService,
 } from "../../../../services"
 import { ProductStatus } from "../../../../models"
-import { ProductVariantPricesCreateReq } from "../../../../types/product-variant"
+import {
+  CreateProductVariantInput,
+  ProductVariantPricesCreateReq,
+} from "../../../../types/product-variant"
 import { validator } from "../../../../utils/validator"
 
 /**
@@ -222,8 +225,7 @@ export default async (req, res) => {
 
   const entityManager: EntityManager = req.scope.resolve("manager")
 
-  let newProduct
-  await entityManager.transaction(async (manager) => {
+  const product = await entityManager.transaction(async (manager) => {
     const { variants } = validated
     delete validated.variants
 
@@ -234,12 +236,16 @@ export default async (req, res) => {
     let shippingProfile
     // Get default shipping profile
     if (validated.is_giftcard) {
-      shippingProfile = await shippingProfileService.retrieveGiftCardDefault()
+      shippingProfile = await shippingProfileService
+        .withTransaction(manager)
+        .retrieveGiftCardDefault()
     } else {
-      shippingProfile = await shippingProfileService.retrieveDefault()
+      shippingProfile = await shippingProfileService
+        .withTransaction(manager)
+        .retrieveDefault()
     }
 
-    newProduct = await productService
+    const newProduct = await productService
       .withTransaction(manager)
       .create({ ...validated, profile_id: shippingProfile.id })
 
@@ -250,7 +256,7 @@ export default async (req, res) => {
 
       const optionIds =
         validated?.options?.map(
-          (o) => newProduct.options.find((newO) => newO.title === o.title).id
+          (o) => newProduct.options.find((newO) => newO.title === o.title)?.id
         ) || []
 
       await Promise.all(
@@ -266,18 +272,23 @@ export default async (req, res) => {
 
           await productVariantService
             .withTransaction(manager)
-            .create(newProduct.id, variant)
+            .create(newProduct.id, variant as CreateProductVariantInput)
         })
       )
     }
-  })
 
-  const rawProduct = await productService.retrieve(newProduct.id, {
-    select: defaultAdminProductFields,
-    relations: defaultAdminProductRelations,
-  })
+    const rawProduct = await productService
+      .withTransaction(manager)
+      .retrieve(newProduct.id, {
+        select: defaultAdminProductFields,
+        relations: defaultAdminProductRelations,
+      })
 
-  const [product] = await pricingService.setProductPrices([rawProduct])
+    const [product] = await pricingService
+      .withTransaction(manager)
+      .setProductPrices([rawProduct])
+    return product
+  })
 
   res.json({ product })
 }
