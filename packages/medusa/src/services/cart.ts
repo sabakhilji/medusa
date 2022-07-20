@@ -48,7 +48,7 @@ type InjectedDependencies = {
   addressRepository: typeof AddressRepository
   paymentSessionRepository: typeof PaymentSessionRepository
   lineItemRepository: typeof LineItemRepository
-  salesChannelRepository: SalesChannelRepository
+  salesChannelRepository: typeof SalesChannelRepository
   eventBusService: EventBusService
   taxProviderService: TaxProviderService
   paymentProviderService: PaymentProviderService
@@ -89,7 +89,7 @@ class CartService extends TransactionBaseService<CartService> {
   protected readonly addressRepository_: typeof AddressRepository
   protected readonly paymentSessionRepository_: typeof PaymentSessionRepository
   protected readonly lineItemRepository_: typeof LineItemRepository
-  protected readonly salesChannelRepository_: SalesChannelRepository
+  protected readonly salesChannelRepository_: typeof SalesChannelRepository
   protected readonly eventBus_: EventBusService
   protected readonly productVariantService_: ProductVariantService
   protected readonly productService_: ProductService
@@ -534,12 +534,13 @@ class CartService extends TransactionBaseService<CartService> {
     const salesChannelRepo: SalesChannelRepository =
       transactionManager.getCustomRepository(this.salesChannelRepository_)
 
-    const salesChannel = cart.sales_channel
-    const productId = lineItem.variant.product_id
+    if (!cart.sales_channel_id) {
+      return true
+    }
 
     return await salesChannelRepo.isProductInSalesChannel(
-      salesChannel.id,
-      productId
+      cart.sales_channel_id,
+      lineItem.variant.product_id
     )
   }
 
@@ -562,7 +563,6 @@ class CartService extends TransactionBaseService<CartService> {
             "items.variant.product",
             "discounts",
             "discounts.rule",
-            "sales_channels",
           ],
         })
 
