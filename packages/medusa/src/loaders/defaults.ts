@@ -69,6 +69,7 @@ export default async ({
   const profileService = container.resolve<ShippingProfileService>(
     "shippingProfileService"
   )
+  const salesChannelService = container.resolve<SalesChannelService>("salesChannelService")
   const logger = container.resolve<Logger>("logger")
   const featureFlagRouter = container.resolve<FlagRouter>("featureFlagRouter")
 
