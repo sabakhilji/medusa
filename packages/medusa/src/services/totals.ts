@@ -214,7 +214,7 @@ class TotalsService extends TransactionBaseService<TotalsService> {
           taxLines = shippingMethod.tax_lines
         } else {
           const orderLines = await this.taxProviderService_
-            .withTransction(this.manager_)
+            .withTransaction(this.manager_)
             .getTaxLines(cartOrOrder.items, calculationContext)
 
           taxLines = orderLines.filter((ol) => {
@@ -770,7 +770,7 @@ class TotalsService extends TransactionBaseService<TotalsService> {
             taxLines = lineItem.tax_lines
           } else {
             const orderLines = await this.taxProviderService_
-              .withTransction(this.manager_)
+              .withTransaction(this.manager_)
               .getTaxLines(cartOrOrder.items, calculationContext)
 
             taxLines = orderLines.filter((ol) => {
