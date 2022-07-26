@@ -7,7 +7,6 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator"
-import { FindOperator } from "typeorm"
 import { Product, ProductOptionValue, ProductStatus } from "../models"
 import { optionalBooleanMapper } from "../utils/validators/is-boolean"
 import { IsType } from "../utils/validators/is-type"
