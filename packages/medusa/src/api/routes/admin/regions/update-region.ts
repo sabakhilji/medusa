@@ -1,13 +1,14 @@
 import {
   IsArray,
   IsBoolean,
-  IsNumber,
+  IsNumber, IsObject,
   IsOptional,
-  IsString,
-} from "class-validator"
+  IsString
+} from "class-validator";
 import { defaultAdminRegionRelations, defaultAdminRegionFields } from "."
 import { validator } from "../../../../utils/validator"
 import RegionService from "../../../../services/region"
+import { UpdateRegionInput } from "../../../../types/region"
 
 /**
  * @oas [post] /regions/{id}
@@ -75,7 +76,7 @@ export default async (req, res) => {
   const validated = await validator(AdminPostRegionsRegionReq, req.body)
 
   const regionService: RegionService = req.scope.resolve("regionService")
-  await regionService.update(region_id, validated)
+  await regionService.update(region_id, validated as UpdateRegionInput)
   const region = await regionService.retrieve(region_id, {
     select: defaultAdminRegionFields,
     relations: defaultAdminRegionRelations,
@@ -128,4 +129,9 @@ export class AdminPostRegionsRegionReq {
   @IsString({ each: true })
   @IsOptional()
   countries?: string[]
+
+  @IsObject()
+  @IsOptional()
+  metadata?: Record<string, unknown>
+}
 }
