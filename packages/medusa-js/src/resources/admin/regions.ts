@@ -56,7 +56,7 @@ class AdminRegionsResource extends BaseResource {
     customHeaders: Record<string, any> = {}
   ): ResponsePromise<AdminRegionsDeleteRes> {
     const path = `/admin/regions/${id}`
-    return this.client.request("DELETE", path, {}, {}, customHeaders)
+    return this.client.request("DELETE", path, undefined, {}, customHeaders)
   }
 
   /**
@@ -70,7 +70,7 @@ class AdminRegionsResource extends BaseResource {
     customHeaders: Record<string, any> = {}
   ): ResponsePromise<AdminRegionsRes> {
     const path = `/admin/regions/${id}`
-    return this.client.request("GET", path, {}, {}, customHeaders)
+    return this.client.request("GET", path, undefined, {}, customHeaders)
   }
 
   /**
@@ -90,7 +90,7 @@ class AdminRegionsResource extends BaseResource {
       path = `/admin/regions?${queryString}`
     }
 
-    return this.client.request("GET", path, {}, {}, customHeaders)
+    return this.client.request("GET", path, undefined, {}, customHeaders)
   }
 
   /**
@@ -122,7 +122,7 @@ class AdminRegionsResource extends BaseResource {
     customHeaders: Record<string, any> = {}
   ): ResponsePromise<AdminRegionsRes> {
     const path = `/admin/regions/${id}/countries/${country_code}`
-    return this.client.request("DELETE", path, {}, {}, customHeaders)
+    return this.client.request("DELETE", path, undefined, {}, customHeaders)
   }
 
   /**
@@ -154,7 +154,7 @@ class AdminRegionsResource extends BaseResource {
     customHeaders: Record<string, any> = {}
   ): ResponsePromise<AdminRegionsRes> {
     const path = `/admin/regions/${id}/fulfillment-providers/${provider_id}`
-    return this.client.request("DELETE", path, {}, {}, customHeaders)
+    return this.client.request("DELETE", path, undefined, {}, customHeaders)
   }
 
   /**
@@ -168,7 +168,7 @@ class AdminRegionsResource extends BaseResource {
     customHeaders: Record<string, any> = {}
   ): ResponsePromise<AdminGetRegionsRegionFulfillmentOptionsRes> {
     const path = `/admin/regions/${id}/fulfillment-options`
-    return this.client.request("GET", path, {}, {}, customHeaders)
+    return this.client.request("GET", path, undefined, {}, customHeaders)
   }
 
   /**
@@ -200,7 +200,7 @@ class AdminRegionsResource extends BaseResource {
     customHeaders: Record<string, any> = {}
   ): ResponsePromise<AdminRegionsRes> {
     const path = `/admin/regions/${id}/payment-providers/${provider_id}`
-    return this.client.request("DELETE", path, {}, {}, customHeaders)
+    return this.client.request("DELETE", path, undefined, {}, customHeaders)
   }
 }
 
