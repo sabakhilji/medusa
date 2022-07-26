@@ -1,10 +1,11 @@
 import {
   IsArray,
   IsBoolean,
-  IsNumber, IsObject,
+  IsNumber,
+  IsObject,
   IsOptional,
-  IsString
-} from "class-validator";
+  IsString,
+} from "class-validator"
 import { defaultAdminRegionRelations, defaultAdminRegionFields } from "."
 import { validator } from "../../../../utils/validator"
 import RegionService from "../../../../services/region"
@@ -133,5 +134,4 @@ export class AdminPostRegionsRegionReq {
   @IsObject()
   @IsOptional()
   metadata?: Record<string, unknown>
-}
 }

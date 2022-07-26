@@ -65,7 +65,7 @@ class PricingService extends TransactionBaseService<PricingService> {
   ): Promise<PricingContext> {
     return await this.atomicPhase_(async (manager: EntityManager) => {
       let automaticTaxes = false
-      let taxRate = null
+      let taxRate: number | null = null
       let currencyCode = context.currency_code
 
       if (context.region_id) {
