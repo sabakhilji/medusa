@@ -12,7 +12,11 @@ import reqIp from "request-ip"
 import { EntityManager } from "typeorm"
 
 import { defaultStoreCartFields, defaultStoreCartRelations } from "."
-import { CartService, LineItemService } from "../../../../services"
+import {
+  CartService,
+  LineItemService,
+  RegionService,
+} from "../../../../services"
 import { validator } from "../../../../utils/validator"
 import { AddressPayload } from "../../../../types/common"
 import { decorateLineItemsWithTotals } from "./decorate-line-items-with-totals"
@@ -82,7 +86,7 @@ export default async (req, res) => {
     if (typeof validated.region_id !== "undefined") {
       regionId = validated.region_id
     } else {
-      const regionService = req.scope.resolve("regionService")
+      const regionService: RegionService = req.scope.resolve("regionService")
       const regions = await regionService.withTransaction(manager).list({})
 
       if (!regions?.length) {
