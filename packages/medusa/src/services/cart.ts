@@ -39,7 +39,6 @@ import RegionService from "./region"
 import ShippingOptionService from "./shipping-option"
 import TaxProviderService from "./tax-provider"
 import TotalsService from "./totals"
-import { SalesChannelRepository } from "../repositories/sales-channel"
 
 type InjectedDependencies = {
   manager: EntityManager
@@ -521,7 +520,7 @@ class CartService extends TransactionBaseService<CartService> {
    * @param cart - the cart for the line item
    * @param lineItem - the line item being added
    */
-  protected async validateLineItemSalesChannel_(
+  protected async validateLineItemSalesChannel(
     cart: Cart,
     lineItem: LineItem
   ): Promise<boolean> {
@@ -547,14 +546,15 @@ class CartService extends TransactionBaseService<CartService> {
    * Adds a line item to the cart.
    * @param cartId - the id of the cart that we will add to
    * @param lineItem - the line item to add.
-   * @param validateSalesChannels - should check if product belongs to the same sales chanel as cart
-   *  (if cart has associated sales channel)
+   * @param config
+   *    validateSalesChannels - should check if product belongs to the same sales chanel as cart
+   *                            (if cart has associated sales channel)
    * @return the result of the update operation
    */
   async addLineItem(
     cartId: string,
     lineItem: LineItem,
-    validateSalesChannels = false
+    config = { validateSalesChannels: false }
   ): Promise<Cart> {
     return await this.atomicPhase_(
       async (transactionManager: EntityManager) => {
@@ -571,15 +571,13 @@ class CartService extends TransactionBaseService<CartService> {
           ],
         })
 
-        const isSalesChannelAssociationValid = validateSalesChannels
-          ? await this.validateLineItemSalesChannel_(cart, lineItem)
-          : true
-
-        if (!isSalesChannelAssociationValid) {
-          throw new MedusaError(
-            MedusaError.Types.INVALID_DATA,
-            `The product "${lineItem.title}" must belongs to the sales channel on which the cart has been created.`
-          )
+        if (config.validateSalesChannels) {
+          if (!(await this.validateLineItemSalesChannel(cart, lineItem))) {
+            throw new MedusaError(
+              MedusaError.Types.INVALID_DATA,
+              `The product "${lineItem.title}" must belongs to the sales channel on which the cart has been created.`
+            )
+          }
         }
 
         let currentItem: LineItem | undefined

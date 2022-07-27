@@ -17,6 +17,7 @@ import { CartService, LineItemService } from "../../../../services"
 import { validator } from "../../../../utils/validator"
 import { AddressPayload } from "../../../../types/common"
 import { decorateLineItemsWithTotals } from "./decorate-line-items-with-totals"
+import { FlagRouter } from "../../../../utils/flag-router"
 
 /**
  * @oas [post] /carts
@@ -75,6 +76,7 @@ export default async (req, res) => {
   const cartService: CartService = req.scope.resolve("cartService")
 
   const entityManager: EntityManager = req.scope.resolve("manager")
+  const featureFlagRouter: FlagRouter = req.scope.resolve("featureFlagRouter")
 
   await entityManager.transaction(async (manager) => {
     // Add a default region if no region has been specified
@@ -136,7 +138,10 @@ export default async (req, res) => {
             })
           await cartService
             .withTransaction(manager)
-            .addLineItem(cart.id, lineItem, validated.validate_sales_channels)
+            .addLineItem(cart.id, lineItem, {
+              validateSalesChannels:
+                featureFlagRouter.isFeatureEnabled("sales_channels"),
+            })
         })
       )
     }
@@ -175,10 +180,6 @@ export class StorePostCartReq {
   @ValidateNested({ each: true })
   @Type(() => Item)
   items?: Item[]
-
-  @IsBoolean()
-  @IsOptional()
-  validate_sales_channels = false
 
   @IsOptional()
   context?: object
