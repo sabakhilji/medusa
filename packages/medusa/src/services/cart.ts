@@ -39,6 +39,7 @@ import RegionService from "./region"
 import ShippingOptionService from "./shipping-option"
 import TaxProviderService from "./tax-provider"
 import TotalsService from "./totals"
+import { FlagRouter } from "../utils/flag-router"
 
 type InjectedDependencies = {
   manager: EntityManager
@@ -53,6 +54,7 @@ type InjectedDependencies = {
   productService: ProductService
   productVariantService: ProductVariantService
   regionService: RegionService
+  featureFlagRouter: FlagRouter
   lineItemService: LineItemService
   shippingOptionService: ShippingOptionService
   customerService: CustomerService
@@ -103,6 +105,7 @@ class CartService extends TransactionBaseService<CartService> {
   protected readonly customShippingOptionService_: CustomShippingOptionService
   protected readonly priceSelectionStrategy_: IPriceSelectionStrategy
   protected readonly lineItemAdjustmentService_: LineItemAdjustmentService
+  protected readonly featureFlagRouter_: FlagRouter
 
   constructor({
     manager,
@@ -121,6 +124,7 @@ class CartService extends TransactionBaseService<CartService> {
     discountService,
     giftCardService,
     totalsService,
+    featureFlagRouter,
     addressRepository,
     paymentSessionRepository,
     inventoryService,
@@ -153,6 +157,7 @@ class CartService extends TransactionBaseService<CartService> {
     this.taxProviderService_ = taxProviderService
     this.lineItemAdjustmentService_ = lineItemAdjustmentService
     this.priceSelectionStrategy_ = priceSelectionStrategy
+    this.featureFlagRouter_ = featureFlagRouter
   }
 
   protected transformQueryForTotals_(
@@ -571,12 +576,14 @@ class CartService extends TransactionBaseService<CartService> {
           ],
         })
 
-        if (config.validateSalesChannels) {
-          if (!(await this.validateLineItemSalesChannel(cart, lineItem))) {
-            throw new MedusaError(
-              MedusaError.Types.INVALID_DATA,
-              `The product "${lineItem.title}" must belongs to the sales channel on which the cart has been created.`
-            )
+        if (this.featureFlagRouter_.isFeatureEnabled("sales_channels")) {
+          if (config.validateSalesChannels) {
+            if (!(await this.validateLineItemSalesChannel(cart, lineItem))) {
+              throw new MedusaError(
+                MedusaError.Types.INVALID_DATA,
+                `The product "${lineItem.title}" must belongs to the sales channel on which the cart has been created.`
+              )
+            }
           }
         }
 
